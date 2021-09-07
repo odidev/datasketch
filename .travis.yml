@@ -3,6 +3,8 @@ python:
   - "3.8"
   # - "nightly"
   # TODO: add nightly back when this issue is fixed: https://github.com/cython/cython/issues/3266
+arch:
+  - arm64
 addons:
   apt:
     sources:
@@ -19,6 +21,30 @@ services:
   - cassandra
   - mongodb
 install:
+  - sudo apt-get update && sudo apt-get install -y lsb-release && sudo apt-get clean all
+  - wget -qO - https://www.mongodb.org/static/pgp/server-4.4.asc | sudo apt-key add -
+  - sudo apt-get install gnupg
+  - wget -qO - https://www.mongodb.org/static/pgp/server-4.4.asc | sudo apt-key add -
+  - lsb_release -dc
+  - ls /etc
+  - ls /etc/apt 
+  - ls /etc/apt/sources.list.d/
+  - sudo touch /etc/apt/sources.list.d/mongodb-org-4.4.list
+  - echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/4.4 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-4.4.list
+  - sudo apt-get update
+  - sudo ln -fs /usr/share/zoneinfo/America/New_York /etc/localtime && export DEBIAN_FRONTEND=noninteractive && sudo apt-get install -y tzdata && sudo dpkg-reconfigure --frontend noninteractive tzdata
+  - sudo apt-get install -y mongodb-org=4.4.8
+  - echo "mongodb-org hold" | sudo dpkg --set-selections
+  - echo "mongodb-org-server hold" | sudo dpkg --set-selections
+  - echo "mongodb-org-shell hold" | sudo dpkg --set-selections
+  - echo "mongodb-org-mongos hold" | sudo dpkg --set-selections
+  - echo "mongodb-org-tools hold" | sudo dpkg --set-selections
+  - ps --no-headers -o comm 1 
+  - echo ====================mongodb service starts============================================
+  - sudo systemctl unmask mongod
+  - sudo service mongod start
+  - sudo service mongod status
+  - echo ====================mongodb service started============================================
   # Disable Cassandra optional extensions (faster testing).
   - export CASS_DRIVER_NO_EXTENSIONS=1
   - pip install -e .[test]
